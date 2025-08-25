@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peer Tutoring Dashboard</title>
+<style>
+    :root {
+        --primary-color: #004aad; /* College blue */
+        --secondary-color: #f0f4f8; /* Light grey background */
+        --text-color: #333;
+    }
+    body {
+        font-family: Arial, sans-serif;
+        background-color: var(--secondary-color);
+        color: var(--text-color);
+        margin: 0;
+    }
+
+    /* Header */
+    header {
+        background-color: var(--primary-color);
+        padding: 15px;
+        text-align: center;
+        color: white;
+        font-size: 1.5em;
+    }
+
+    /* Top Buttons */
+    .top-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        padding: 20px;
+        flex-wrap: wrap;
+    }
+    .top-buttons a {
+        text-decoration: none;
+    }
+    .top-buttons button {
+        background-color: var(--primary-color);
+        color: white;
+        font-weight: bold;
+        padding: 15px 25px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: 0.3s;
+    }
+    .top-buttons button:hover {
+        background-color: #003080;
+    }
+
+    /* Sections */
+    .section {
+        max-width: 1200px;
+        margin: auto;
+        padding: 20px;
+    }
+    .section h2 {
+        border-left: 5px solid var(--primary-color);
+        padding-left: 10px;
+        margin-bottom: 15px;
+        color: var(--primary-color);
+    }
+
+    /* Card Grid */
+    .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+    }
+
+    /* Session Card */
+    .card {
+        background-color: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 0 8px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s;
+    }
+    .card:hover {
+        transform: scale(1.02);
+    }
+
+    /* Text Thumbnail */
+    .thumbnail {
+        background-color: var(--primary-color);
+        color: white;
+        text-align: center;
+        padding: 40px 10px;
+        font-size: 22px;
+        font-weight: bold;
+    }
+
+    .card-content {
+        padding: 10px;
+        flex: 1;
+    }
+    .card-content p {
+        margin: 4px 0;
+        font-size: 14px;
+        color: #555;
+    }
+    .card button {
+        margin: 10px;
+        background-color: var(--primary-color);
+        color: white;
+        font-weight: bold;
+        border: none;
+        padding: 8px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    .card button:hover {
+        background-color: #003080;
+    }
+</style>
+</head>
+<body>
+
+<header>
+    Peer Tutoring Dashboard
+</header>
+
+<!-- Offer & Request Buttons -->
+<div class="top-buttons">
+    <a href="offer.html"><button>Offer Tutoring</button></a>
+    <a href="request.html"><button>Request Tutoring</button></a>
+    <a href="my-request.html"><button>My Requests & Offers</button></a>
+    <a href="notifications.html"><button>Notifications</button></a>
+</div>
+
+<!-- Previous Sessions -->
+<div class="section">
+    <h2>Previous Sessions</h2>
+    <div class="card-grid">
+        <div class="card">
+            <div class="thumbnail">Data Structures (DSA)</div>
+            <div class="card-content">
+                <p>Date: 05 Aug 2025 | Time: 5:00 PM</p>
+                <p>Tutored by: Alice Johnson</p>
+            </div>
+        </div>
+        <div class="card">
+            <div class="thumbnail">Physics - Motion Laws</div>
+            <div class="card-content">
+                <p>Date: 01 Aug 2025 | Time: 4:00 PM</p>
+                <p>Tutored by: Bob Smith</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upcoming Sessions -->
+<div class="section">
+    <h2>Upcoming Sessions</h2>
+    <div class="card-grid">
+        <div class="card">
+            <div class="thumbnail">Java OOP Basics</div>
+            <div class="card-content">
+                <p>Date: 12 Aug 2025 | Time: 6:00 PM</p>
+                <p>Tutored by: Charlie Brown</p>
+            </div>
+            <button onclick="alert('You will be notified for Java OOP Basics')">Notify Me</button>
+        </div>
+        <div class="card">
+            <div class="thumbnail">Mathematics - Algebra</div>
+            <div class="card-content">
+                <p>Date: 14 Aug 2025 | Time: 5:30 PM</p>
+                <p>Tutored by: Diana Lee</p>
+            </div>
+            <button onclick="alert('You will be notified for Mathematics - Algebra')">Notify Me</button>
+        </div>
+    </div>
+</div>
+
+<!-- Live Sessions -->
+<div class="section">
+    <h2>Live Sessions</h2>
+    <div class="card-grid">
+        <div class="card">
+            <div class="thumbnail">Machine Learning Intro</div>
+            <div class="card-content">
+                <p>Date: 11 Aug 2025 | Time: 4:00 PM</p>
+                <p>Tutored by: Ethan White</p>
+            </div>
+            <button onclick="alert('Joining Machine Learning Intro Live')">Join</button>
+        </div>
+        <div class="card">
+            <div class="thumbnail">Cybersecurity Basics</div>
+            <div class="card-content">
+                <p>Date: 11 Aug 2025 | Time: 5:30 PM</p>
+                <p>Tutored by: Fiona Green</p>
+            </div>
+            <button onclick="alert('Joining Cybersecurity Basics Live')">Join</button>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

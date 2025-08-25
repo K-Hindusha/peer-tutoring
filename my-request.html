@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Requests & Offers</title>
+  <style>
+    :root {
+      --primary-color: #004aad; /* College blue */
+      --secondary-color: #f0f4f8; /* Light grey */
+      --text-color: #333;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: var(--secondary-color);
+      color: var(--text-color);
+    }
+
+    header {
+      background: var(--primary-color);
+      padding: 15px;
+      color: white;
+      text-align: center;
+      font-size: 1.5em;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: var(--primary-color);
+      border-left: 5px solid var(--primary-color);
+      padding-left: 10px;
+      margin-bottom: 15px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .status {
+      font-weight: bold;
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+
+    .pending { background: orange; color: white; }
+    .accepted { background: green; color: white; }
+    .completed { background: gray; color: white; }
+  </style>
+</head>
+<body>
+
+  <header>
+    My Requests & Offers
+  </header>
+
+  <div class="container">
+    <!-- My Requests -->
+    <h2>📌 My Tutoring Requests</h2>
+    <table>
+      <tr>
+        <th>Subject</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Status</th>
+      </tr>
+      <tr>
+        <td>Mathematics - Algebra</td>
+        <td>14 Aug 2025</td>
+        <td>5:30 PM</td>
+        <td><span class="status pending">Pending</span></td>
+      </tr>
+      <tr>
+        <td>Data Structures (DSA)</td>
+        <td>05 Aug 2025</td>
+        <td>5:00 PM</td>
+        <td><span class="status completed">Completed</span></td>
+      </tr>
+    </table>
+
+    <!-- My Offers -->
+    <h2>🎓 My Tutoring Offers</h2>
+    <table>
+      <tr>
+        <th>Subject</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Status</th>
+      </tr>
+      <tr>
+        <td>Java OOP Basics</td>
+        <td>12 Aug 2025</td>
+        <td>6:00 PM</td>
+        <td><span class="status accepted">Accepted</span></td>
+      </tr>
+      <tr>
+        <td>Cybersecurity Basics</td>
+        <td>11 Aug 2025</td>
+        <td>5:30 PM</td>
+        <td><span class="status pending">Pending</span></td>
+      </tr>
+    </table>
+  </div>
+
+</body>
+</html>
