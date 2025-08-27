@@ -7,7 +7,7 @@ variable "resource_group_name" {
 variable "location" {
   description = "Azure location (must be supported by Static Web Apps)"
   type        = string
-  default     = "East US 2"
+  default     = "East Asia"
 }
 
 variable "static_app_name" {
@@ -15,3 +15,4 @@ variable "static_app_name" {
   type        = string
   default     = "peertutoringapp"
 }
+
