@@ -1,4 +1,3 @@
-output "static_web_app_url" {
-  value = "https://${azurerm_static_site.swa.default_host_name}"
+output "webapp_url" {
+  value = azurerm_linux_web_app.peer_app.default_hostname
 }
-
