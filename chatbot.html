@@ -7,7 +7,7 @@
   <script src="https://alcdn.msauth.net/browser/2.37.0/js/msal-browser.min.js"></script>
   <style>
     body {
-      font-family: Segoe UI, sans-serif;
+      font-family: "Segoe UI", sans-serif;
       background: linear-gradient(135deg, #0078d4, #6c5ce7);
       display: flex;
       align-items: center;
@@ -23,7 +23,10 @@
       padding: 25px;
       text-align: center;
     }
-    h1 { color: #0078d4; }
+    h1 {
+      color: #0078d4;
+      margin-bottom: 15px;
+    }
     button {
       padding: 10px 15px;
       border: none;
@@ -32,11 +35,25 @@
       font-weight: 600;
       width: 100%;
       margin-top: 10px;
+      transition: 0.2s;
     }
     #loginBtn { background:#0078d4; color:#fff; }
+    #loginBtn:hover { background:#005a9e; }
     #logoutBtn { background:#f3f6fc; color:#0078d4; display:none; }
-    .info { margin-top:20px; background:#e8f4ff; border-radius:8px; padding:10px; display:none; }
-    img { border-radius:50%; width:60px; height:60px; margin-bottom:10px; }
+    .info {
+      margin-top:20px;
+      background:#e8f4ff;
+      border-radius:8px;
+      padding:10px;
+      display:none;
+    }
+    img {
+      border-radius:50%;
+      width:60px;
+      height:60px;
+      margin-bottom:10px;
+      object-fit: cover;
+    }
   </style>
 </head>
 <body>
@@ -47,7 +64,7 @@
     <button id="logoutBtn">Sign Out</button>
 
     <div id="userInfo" class="info">
-      <img id="userImage" src="">
+      <img id="userImage" src="https://www.svgrepo.com/show/382106/male-avatar-boy-face-man-user-6.svg" alt="Profile">
       <h3 id="userName"></h3>
       <p id="userEmail"></p>
       <p id="accessMsg"></p>
@@ -55,12 +72,12 @@
   </div>
 
   <script>
-    // === STEP 1: Replace with your actual values ===
+    // === STEP 1: Replace with your Azure AD details ===
     const msalConfig = {
       auth: {
-        clientId: "18931f35-9b52-43b0-9022-7c08b8170647", // from Azure -> Overview
-        authority: "https://login.microsoftonline.com/13f148ca-3eb7-4c04-a8cd-e2475bd7d8f4", // from Azure -> Overview
-        redirectUri: "https://yellow-flower-0eafe1b00.1.azurestaticapps.net/"
+        clientId: "18931f35-9b52-43b0-9022-7c08b8170647", // App (client) ID
+        authority: "https://login.microsoftonline.com/13f148ca-3eb7-4c04-a8cd-e2475bd7d8f4", // Directory (tenant) ID
+        redirectUri: "https://yellow-flower-0eafe1b00.1.azurestaticapps.net/" // Redirect URI registered in Azure
       }
     };
 
@@ -100,7 +117,7 @@
     // === STEP 4: Check college domain ===
     function checkUserDomain(user) {
       const email = user.username;
-      statusEl.textContent = Signed in as: ${email};
+      statusEl.textContent = `Signed in as: ${email}`;
       loginBtn.style.display = "none";
       logoutBtn.style.display = "block";
       infoEl.style.display = "block";
@@ -110,24 +127,31 @@
       if (email.endsWith("@rajalakshmi.edu.in")) {
         msgEl.textContent = "✅ Access granted for Rajalakshmi student.";
         msgEl.style.color = "green";
+        // Optional: Redirect to dashboard
+        // window.location.href = "dashboard.html";
       } else {
         msgEl.textContent = "❌ Access denied. Not a Rajalakshmi email.";
         msgEl.style.color = "red";
-        // Optional: automatically logout
+        // Auto logout after 2 seconds
         setTimeout(() => msalInstance.logoutPopup(), 2000);
       }
 
-      // optional photo fetch
       fetchPhoto();
     }
 
     // === STEP 5: Fetch user photo ===
     async function fetchPhoto() {
       try {
-        const token = await msalInstance.acquireTokenSilent(loginRequest);
-        const photoRes = await fetch("https://graph.microsoft.com/v1.0/me/photo/$value", {
-          headers: { Authorization: Bearer ${token.accessToken} }
+        const accounts = msalInstance.getAllAccounts();
+        const tokenResponse = await msalInstance.acquireTokenSilent({
+          ...loginRequest,
+          account: accounts[0]
         });
+
+        const photoRes = await fetch("https://graph.microsoft.com/v1.0/me/photo/$value", {
+          headers: { Authorization: `Bearer ${tokenResponse.accessToken}` }
+        });
+
         if (photoRes.ok) {
           const blob = await photoRes.blob();
           imgEl.src = URL.createObjectURL(blob);
@@ -139,32 +163,32 @@
       }
     }
   </script>
-  ...
-<!-- Chatbase Chatbot Code -->
-<script>
-(function(){
-  if(!window.chatbase || window.chatbase("getState")!=="initialized"){
-    window.chatbase=(...arguments)=>{
-      if(!window.chatbase.q){window.chatbase.q=[]}
-      window.chatbase.q.push(arguments)
+
+  <!-- === Chatbase Chatbot Embed === -->
+  <script>
+  (function(){
+    if(!window.chatbase || window.chatbase("getState")!=="initialized"){
+      window.chatbase=(...arguments)=>{
+        if(!window.chatbase.q){window.chatbase.q=[]}
+        window.chatbase.q.push(arguments)
+      };
+      window.chatbase=new Proxy(window.chatbase,{
+        get(target,prop){
+          if(prop==="q"){return target.q}
+          return(...args)=>target(prop,...args)
+        }
+      })
+    }
+    const onLoad=function(){
+      const script=document.createElement("script");
+      script.src="https://www.chatbase.co/embed.min.js";
+      script.id="yNXiEdNnEsAi686sN5IW2";
+      script.domain="www.chatbase.co";
+      document.body.appendChild(script)
     };
-    window.chatbase=new Proxy(window.chatbase,{
-      get(target,prop){
-        if(prop==="q"){return target.q}
-        return(...args)=>target(prop,...args)
-      }
-    })
-  }
-  const onLoad=function(){
-    const script=document.createElement("script");
-    script.src="https://www.chatbase.co/embed.min.js";
-    script.id="yNXiEdNnEsAi686sN5IW2";
-    script.domain="www.chatbase.co";
-    document.body.appendChild(script)
-  };
-  if(document.readyState==="complete"){onLoad()}
-  else{window.addEventListener("load",onLoad)}
-})();
-</script>
+    if(document.readyState==="complete"){onLoad()}
+    else{window.addEventListener("load",onLoad)}
+  })();
+  </script>
 </body>
 </html>
