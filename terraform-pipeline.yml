@@ -1,0 +1,209 @@
+# Terraform Pipeline - Manages Infrastructure Only
+# This pipeline is triggered manually, not on every commit
+
+trigger: none  # Manual only - we don't want to run this on every code change
+
+pool:
+  name: Default  # Your self-hosted agent pool
+
+variables:
+  TF_VERSION: 'latest'
+  WORKING_DIR: '$(System.DefaultWorkingDirectory)/terraform'
+
+stages:
+# ============================================
+# STAGE 1: VALIDATE
+# Purpose: Check if Terraform syntax is correct
+# ============================================
+- stage: Validate
+  displayName: 'Validate Terraform Configuration'
+  jobs:
+  - job: ValidateJob
+    displayName: 'Check Terraform Syntax'
+    steps:
+    # Install Terraform on the agent
+    - task: TerraformInstaller@1
+      displayName: 'Install Terraform'
+      inputs:
+        terraformVersion: '$(TF_VERSION)'
+    
+    # Initialize Terraform (download providers, connect to backend)
+    - task: PowerShell@2
+      displayName: 'Terraform Init'
+      inputs:
+        targetType: 'inline'
+        workingDirectory: '$(WORKING_DIR)'
+        script: |
+          Write-Host "Initializing Terraform..."
+          terraform init
+      env:
+        ARM_SUBSCRIPTION_ID: $(subscription_id)
+        ARM_TENANT_ID: $(tenant_id)
+        ARM_CLIENT_ID: $(client_id)
+        ARM_CLIENT_SECRET: $(client_secret)
+    
+    # Validate the Terraform configuration files
+    - task: PowerShell@2
+      displayName: 'Terraform Validate'
+      inputs:
+        targetType: 'inline'
+        workingDirectory: '$(WORKING_DIR)'
+        script: |
+          Write-Host "Validating Terraform configuration..."
+          terraform validate
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "✅ Terraform configuration is valid!"
+          } else {
+            Write-Host "❌ Terraform configuration has errors!"
+            exit 1
+          }
+
+# ============================================
+# STAGE 2: PLAN
+# Purpose: Preview what changes Terraform will make
+# ============================================
+- stage: Plan
+  displayName: 'Plan Infrastructure Changes'
+  dependsOn: Validate  # Only run if Validate succeeds
+  condition: succeeded()
+  jobs:
+  - job: PlanJob
+    displayName: 'Generate Terraform Plan'
+    steps:
+    - task: TerraformInstaller@1
+      displayName: 'Install Terraform'
+      inputs:
+        terraformVersion: '$(TF_VERSION)'
+    
+    - task: PowerShell@2
+      displayName: 'Terraform Init'
+      inputs:
+        targetType: 'inline'
+        workingDirectory: '$(WORKING_DIR)'
+        script: |
+          terraform init
+      env:
+        ARM_SUBSCRIPTION_ID: $(subscription_id)
+        ARM_TENANT_ID: $(tenant_id)
+        ARM_CLIENT_ID: $(client_id)
+        ARM_CLIENT_SECRET: $(client_secret)
+    
+    # Generate a plan showing what will change
+    - task: PowerShell@2
+      displayName: 'Terraform Plan'
+      inputs:
+        targetType: 'inline'
+        workingDirectory: '$(WORKING_DIR)'
+        script: |
+          Write-Host "========================================="
+          Write-Host "Generating Terraform Plan..."
+          Write-Host "========================================="
+          
+          terraform plan `
+            -var="subscription_id=$(subscription_id)" `
+            -var="tenant_id=$(tenant_id)" `
+            -var="client_id=$(client_id)" `
+            -var="client_secret=$(client_secret)" `
+            -out=tfplan
+          
+          Write-Host ""
+          Write-Host "========================================="
+          Write-Host "📋 Review the plan above carefully!"
+          Write-Host "========================================="
+      env:
+        ARM_SUBSCRIPTION_ID: $(subscription_id)
+        ARM_TENANT_ID: $(tenant_id)
+        ARM_CLIENT_ID: $(client_id)
+        ARM_CLIENT_SECRET: $(client_secret)
+    
+    # Save the plan file for the Apply stage
+    - task: PublishPipelineArtifact@1
+      displayName: 'Save Terraform Plan'
+      inputs:
+        targetPath: '$(WORKING_DIR)/tfplan'
+        artifact: 'terraform-plan'
+        publishLocation: 'pipeline'
+
+# ============================================
+# STAGE 3: APPLY
+# Purpose: Actually create/update infrastructure in Azure
+# ============================================
+- stage: Apply
+  displayName: 'Apply Infrastructure Changes'
+  dependsOn: Plan  # Only run if Plan succeeds
+  condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
+  jobs:
+  - deployment: ApplyJob
+    displayName: 'Apply Terraform Changes'
+    environment: 'Production-Infrastructure'  # Allows approval gates
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          # Check out the code again (deployment jobs don't do this automatically)
+          - checkout: self
+          
+          - task: TerraformInstaller@1
+            displayName: 'Install Terraform'
+            inputs:
+              terraformVersion: '$(TF_VERSION)'
+          
+          - task: PowerShell@2
+            displayName: 'Terraform Init'
+            inputs:
+              targetType: 'inline'
+              workingDirectory: '$(WORKING_DIR)'
+              script: |
+                terraform init
+            env:
+              ARM_SUBSCRIPTION_ID: $(subscription_id)
+              ARM_TENANT_ID: $(tenant_id)
+              ARM_CLIENT_ID: $(client_id)
+              ARM_CLIENT_SECRET: $(client_secret)
+          
+          # Apply the changes to Azure
+          - task: PowerShell@2
+            displayName: 'Terraform Apply'
+            inputs:
+              targetType: 'inline'
+              workingDirectory: '$(WORKING_DIR)'
+              script: |
+                Write-Host "========================================="
+                Write-Host "Applying Terraform Changes..."
+                Write-Host "========================================="
+                
+                terraform apply -auto-approve `
+                  -var="subscription_id=$(subscription_id)" `
+                  -var="tenant_id=$(tenant_id)" `
+                  -var="client_id=$(client_id)" `
+                  -var="client_secret=$(client_secret)"
+                
+                Write-Host ""
+                Write-Host "✅ Infrastructure changes applied successfully!"
+            env:
+              ARM_SUBSCRIPTION_ID: $(subscription_id)
+              ARM_TENANT_ID: $(tenant_id)
+              ARM_CLIENT_ID: $(client_id)
+              ARM_CLIENT_SECRET: $(client_secret)
+          
+          # Show the outputs (like Static Web App URL)
+          - task: PowerShell@2
+            displayName: 'Show Infrastructure Outputs'
+            inputs:
+              targetType: 'inline'
+              workingDirectory: '$(WORKING_DIR)'
+              script: |
+                Write-Host "========================================="
+                Write-Host "📊 Infrastructure Outputs:"
+                Write-Host "========================================="
+                terraform output
+                Write-Host ""
+                Write-Host "🌐 Static Web App URL:"
+                terraform output -raw static_web_app_url
+                Write-Host ""
+                Write-Host "========================================="
+            env:
+              ARM_SUBSCRIPTION_ID: $(subscription_id)
+              ARM_TENANT_ID: $(tenant_id)
+              ARM_CLIENT_ID: $(client_id)
+              ARM_CLIENT_SECRET: $(client_secret)
