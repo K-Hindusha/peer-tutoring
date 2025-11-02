@@ -78,6 +78,7 @@
 
     // === Sign In ===
     loginBtn.onclick = async () => {
+      loginBtn.disabled = true;
       try {
         const loginResponse = await msalInstance.loginPopup(loginRequest);
         const user = loginResponse.account;
@@ -85,6 +86,8 @@
       } catch (err) {
         console.error(err);
         statusEl.textContent = "Login failed. Try again.";
+      } finally {
+        loginBtn.disabled = false;
       }
     };
 
@@ -95,7 +98,6 @@
       loginBtn.style.display = "block";
       logoutBtn.style.display = "none";
       infoEl.style.display = "none";
-      // Remove chatbot on logout
       const chatScript = document.getElementById("chatbase-script");
       if (chatScript) chatScript.remove();
     };
@@ -103,20 +105,17 @@
     // === Domain Check ===
     function checkUserDomain(user) {
       const email = user.username;
-      statusEl.textContent = Signed in as: ${email};
+      statusEl.textContent = `Signed in as: ${email}`;
       loginBtn.style.display = "none";
       logoutBtn.style.display = "block";
       infoEl.style.display = "block";
       emailEl.textContent = email;
-      nameEl.textContent = user.name || "User";
+      nameEl.textContent = user?.name || "User";
 
       if (email.endsWith("@rajalakshmi.edu.in")) {
         msgEl.textContent = "✅ Access granted for Rajalakshmi student.";
         msgEl.style.color = "green";
-
-        // === ✅ Load Chatbot only after successful sign-in ===
         loadChatbaseBot();
-
       } else {
         msgEl.textContent = "❌ Access denied. Not a Rajalakshmi email.";
         msgEl.style.color = "red";
@@ -130,9 +129,10 @@
     async function fetchPhoto() {
       try {
         const token = await msalInstance.acquireTokenSilent(loginRequest);
-        const photoRes = await fetch("https://graph.microsoft.com/v1.0/me/photo/$value", {
-          headers: { Authorization: Bearer ${token.accessToken} }
-        });
+        const photoRes = await fetch(
+          "https://graph.microsoft.com/v1.0/me/photo/$value",
+          { headers: { Authorization: `Bearer ${token.accessToken}` } }
+        );
         if (photoRes.ok) {
           const blob = await photoRes.blob();
           imgEl.src = URL.createObjectURL(blob);
@@ -144,14 +144,13 @@
       }
     }
 
-    // === ✅ Chatbase Chatbot Integration ===
+    // === Chatbase Chatbot Integration ===
     function loadChatbaseBot() {
-      if (document.getElementById("chatbase-script")) return; // Prevent duplicate load
-
+      if (document.getElementById("chatbase-script")) return;
       const chatScript = document.createElement("script");
       chatScript.src = "https://www.chatbase.co/embed.min.js";
       chatScript.id = "chatbase-script";
-      chatScript.setAttribute("chatbotId", "yNXiEdNnEsAi686sN5IW2"); // your bot ID
+      chatScript.setAttribute("chatbotId", "yNXiEdNnEsAi686sN5IW2");
       chatScript.setAttribute("domain", "www.chatbase.co");
       document.body.appendChild(chatScript);
     }
