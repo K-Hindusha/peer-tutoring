@@ -7,7 +7,7 @@
   <script src="https://alcdn.msauth.net/browser/2.37.0/js/msal-browser.min.js"></script>
   <style>
     body {
-      font-family: "Segoe UI", sans-serif;
+      font-family: Segoe UI, sans-serif;
       background: linear-gradient(135deg, #0078d4, #6c5ce7);
       display: flex;
       align-items: center;
@@ -23,10 +23,7 @@
       padding: 25px;
       text-align: center;
     }
-    h1 {
-      color: #0078d4;
-      margin-bottom: 15px;
-    }
+    h1 { color: #0078d4; }
     button {
       padding: 10px 15px;
       border: none;
@@ -35,25 +32,11 @@
       font-weight: 600;
       width: 100%;
       margin-top: 10px;
-      transition: 0.2s;
     }
     #loginBtn { background:#0078d4; color:#fff; }
-    #loginBtn:hover { background:#005a9e; }
     #logoutBtn { background:#f3f6fc; color:#0078d4; display:none; }
-    .info {
-      margin-top:20px;
-      background:#e8f4ff;
-      border-radius:8px;
-      padding:10px;
-      display:none;
-    }
-    img {
-      border-radius:50%;
-      width:60px;
-      height:60px;
-      margin-bottom:10px;
-      object-fit: cover;
-    }
+    .info { margin-top:20px; background:#e8f4ff; border-radius:8px; padding:10px; display:none; }
+    img { border-radius:50%; width:60px; height:60px; margin-bottom:10px; }
   </style>
 </head>
 <body>
@@ -64,7 +47,7 @@
     <button id="logoutBtn">Sign Out</button>
 
     <div id="userInfo" class="info">
-      <img id="userImage" src="https://www.svgrepo.com/show/382106/male-avatar-boy-face-man-user-6.svg" alt="Profile">
+      <img id="userImage" src="">
       <h3 id="userName"></h3>
       <p id="userEmail"></p>
       <p id="accessMsg"></p>
@@ -72,12 +55,12 @@
   </div>
 
   <script>
-    // === STEP 1: Replace with your Azure AD details ===
+    // === Azure AD Config ===
     const msalConfig = {
       auth: {
-        clientId: "18931f35-9b52-43b0-9022-7c08b8170647", // App (client) ID
-        authority: "https://login.microsoftonline.com/13f148ca-3eb7-4c04-a8cd-e2475bd7d8f4", // Directory (tenant) ID
-        redirectUri: "https://yellow-flower-0eafe1b00.1.azurestaticapps.net/" // Redirect URI registered in Azure
+        clientId: "18931f35-9b52-43b0-9022-7c08b8170647",
+        authority: "https://login.microsoftonline.com/13f148ca-3eb7-4c04-a8cd-e2475bd7d8f4",
+        redirectUri: "https://yellow-flower-0eafe1b00.1.azurestaticapps.net/"
       }
     };
 
@@ -93,7 +76,7 @@
     const imgEl = document.getElementById("userImage");
     const msgEl = document.getElementById("accessMsg");
 
-    // === STEP 2: Sign in ===
+    // === Sign In ===
     loginBtn.onclick = async () => {
       try {
         const loginResponse = await msalInstance.loginPopup(loginRequest);
@@ -105,19 +88,22 @@
       }
     };
 
-    // === STEP 3: Sign out ===
+    // === Sign Out ===
     logoutBtn.onclick = async () => {
       await msalInstance.logoutPopup();
       statusEl.textContent = "You are not signed in.";
       loginBtn.style.display = "block";
       logoutBtn.style.display = "none";
       infoEl.style.display = "none";
+      // Remove chatbot on logout
+      const chatScript = document.getElementById("chatbase-script");
+      if (chatScript) chatScript.remove();
     };
 
-    // === STEP 4: Check college domain ===
+    // === Domain Check ===
     function checkUserDomain(user) {
       const email = user.username;
-      statusEl.textContent = `Signed in as: ${email}`;
+      statusEl.textContent = Signed in as: ${email};
       loginBtn.style.display = "none";
       logoutBtn.style.display = "block";
       infoEl.style.display = "block";
@@ -127,31 +113,26 @@
       if (email.endsWith("@rajalakshmi.edu.in")) {
         msgEl.textContent = "✅ Access granted for Rajalakshmi student.";
         msgEl.style.color = "green";
-        // Optional: Redirect to dashboard
-        // window.location.href = "dashboard.html";
+
+        // === ✅ Load Chatbot only after successful sign-in ===
+        loadChatbaseBot();
+
       } else {
         msgEl.textContent = "❌ Access denied. Not a Rajalakshmi email.";
         msgEl.style.color = "red";
-        // Auto logout after 2 seconds
         setTimeout(() => msalInstance.logoutPopup(), 2000);
       }
 
       fetchPhoto();
     }
 
-    // === STEP 5: Fetch user photo ===
+    // === Load User Photo ===
     async function fetchPhoto() {
       try {
-        const accounts = msalInstance.getAllAccounts();
-        const tokenResponse = await msalInstance.acquireTokenSilent({
-          ...loginRequest,
-          account: accounts[0]
-        });
-
+        const token = await msalInstance.acquireTokenSilent(loginRequest);
         const photoRes = await fetch("https://graph.microsoft.com/v1.0/me/photo/$value", {
-          headers: { Authorization: `Bearer ${tokenResponse.accessToken}` }
+          headers: { Authorization: Bearer ${token.accessToken} }
         });
-
         if (photoRes.ok) {
           const blob = await photoRes.blob();
           imgEl.src = URL.createObjectURL(blob);
@@ -162,33 +143,18 @@
         imgEl.src = "https://www.svgrepo.com/show/382106/male-avatar-boy-face-man-user-6.svg";
       }
     }
-  </script>
 
-  <!-- === Chatbase Chatbot Embed === -->
-  <script>
-  (function(){
-    if(!window.chatbase || window.chatbase("getState")!=="initialized"){
-      window.chatbase=(...arguments)=>{
-        if(!window.chatbase.q){window.chatbase.q=[]}
-        window.chatbase.q.push(arguments)
-      };
-      window.chatbase=new Proxy(window.chatbase,{
-        get(target,prop){
-          if(prop==="q"){return target.q}
-          return(...args)=>target(prop,...args)
-        }
-      })
+    // === ✅ Chatbase Chatbot Integration ===
+    function loadChatbaseBot() {
+      if (document.getElementById("chatbase-script")) return; // Prevent duplicate load
+
+      const chatScript = document.createElement("script");
+      chatScript.src = "https://www.chatbase.co/embed.min.js";
+      chatScript.id = "chatbase-script";
+      chatScript.setAttribute("chatbotId", "yNXiEdNnEsAi686sN5IW2"); // your bot ID
+      chatScript.setAttribute("domain", "www.chatbase.co");
+      document.body.appendChild(chatScript);
     }
-    const onLoad=function(){
-      const script=document.createElement("script");
-      script.src="https://www.chatbase.co/embed.min.js";
-      script.id="yNXiEdNnEsAi686sN5IW2";
-      script.domain="www.chatbase.co";
-      document.body.appendChild(script)
-    };
-    if(document.readyState==="complete"){onLoad()}
-    else{window.addEventListener("load",onLoad)}
-  })();
   </script>
 </body>
 </html>
