@@ -1,290 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Peer Tutoring Dashboard</title>
-<style>
-  :root {
-    --primary-color: #004aad;
-    --secondary-color: #f0f4f8;
-    --text-color: #333;
-  }
-  body {
-    font-family: Arial, sans-serif;
-    background-color: var(--secondary-color);
-    color: var(--text-color);
-    margin: 0;
-  }
-
-  header {
-    background-color: var(--primary-color);
-    padding: 15px;
-    text-align: center;
-    color: white;
-    font-size: 1.5em;
-  }
-
-  .top-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    padding: 20px;
-    flex-wrap: wrap;
-  }
-  .top-buttons button {
-    background-color: var(--primary-color);
-    color: white;
-    font-weight: bold;
-    padding: 15px 25px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: 0.3s;
-  }
-  .top-buttons button:hover {
-    background-color: #003080;
-  }
-
-  .section {
-    max-width: 1200px;
-    margin: auto;
-    padding: 20px;
-  }
-  .section h2 {
-    border-left: 5px solid var(--primary-color);
-    padding-left: 10px;
-    margin-bottom: 15px;
-    color: var(--primary-color);
-  }
-
-  .card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-  }
-
-  .card {
-    background-color: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.2s;
-  }
-  .card:hover {
-    transform: scale(1.02);
-  }
-
-  .thumbnail {
-    background-color: var(--primary-color);
-    color: white;
-    text-align: center;
-    padding: 40px 10px;
-    font-size: 22px;
-    font-weight: bold;
-  }
-
-  .card-content {
-    padding: 10px;
-    flex: 1;
-  }
-  .card-content p {
-    margin: 4px 0;
-    font-size: 14px;
-    color: #555;
-  }
-  .card button {
-    margin: 10px;
-    background-color: var(--primary-color);
-    color: white;
-    font-weight: bold;
-    border: none;
-    padding: 8px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-  .card button:hover {
-    background-color: #003080;
-  }
-
-  /* Modal Styles */
-  .modal {
-    display: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%; 
-    height: 100%;
-    overflow: auto; 
-    background-color: rgba(0,0,0,0.4);
-  }
-  .modal.show {
-    display: block;
-    opacity: 1;
-  }
-  .modal-content {
-    background-color: #fefefe;
-    margin: 10% auto; 
-    padding: 20px;
-    border: 1px solid #888;
-    border-radius: 8px;
-    width: 90%; 
-    max-width: 500px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2), 0 6px 20px rgba(0,0,0,0.19);
-    position: relative;
-  }
-  .close-btn {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-  }
-  .close-btn:hover,
-  .close-btn:focus {
-    color: #000;
-    cursor: pointer;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Peer Tutoring Login</title>
+  <script src="https://alcdn.msauth.net/browser/2.37.0/js/msal-browser.min.js"></script>
+  <style>
+    body {
+      font-family: Segoe UI, sans-serif;
+      background: linear-gradient(135deg, #0078d4, #6c5ce7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .box {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      width: 380px;
+      padding: 25px;
+      text-align: center;
+    }
+    h1 { color: #0078d4; }
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      width: 100%;
+      margin-top: 10px;
+    }
+    #loginBtn { background:#0078d4; color:#fff; }
+    #logoutBtn { background:#f3f6fc; color:#0078d4; display:none; }
+    .info { margin-top:20px; background:#e8f4ff; border-radius:8px; padding:10px; display:none; }
+    img { border-radius:50%; width:60px; height:60px; margin-bottom:10px; }
+  </style>
 </head>
 <body>
+  <div class="box">
+    <h1>Peer Tutoring Portal</h1>
+    <p id="status">You are not signed in.</p>
+    <button id="loginBtn">Sign in with College ID</button>
+    <button id="logoutBtn">Sign Out</button>
 
-<header>Peer Tutoring Dashboard</header>
-
-<div class="top-buttons">
-  <button onclick="window.location.href='offer.html'">Offer Tutoring</button>
-  <button onclick="window.location.href='request.html'">Request Tutoring</button>
-  <button onclick="window.location.href='my-request.html'">My Requests & Offers</button>
-  <button onclick="window.location.href='notifications.html'">Notifications</button>
-  <button id="chatbotButton">Chatbot</button>
-</div>
-
-<div class="section">
-  <h2>Previous Sessions</h2>
-  <div class="card-grid">
-    <div class="card">
-      <div class="thumbnail">Data Structures (DSA)</div>
-      <div class="card-content">
-        <p>Date: 05 Aug 2025 | Time: 5:00 PM</p>
-        <p>Tutored by: Alice Johnson</p>
-      </div>
-    </div>
-    <div class="card">
-      <div class="thumbnail">Physics - Motion Laws</div>
-      <div class="card-content">
-        <p>Date: 01 Aug 2025 | Time: 4:00 PM</p>
-        <p>Tutored by: Bob Smith</p>
-      </div>
+    <div id="userInfo" class="info">
+      <img id="userImage" src="">
+      <h3 id="userName"></h3>
+      <p id="userEmail"></p>
+      <p id="accessMsg"></p>
     </div>
   </div>
-</div>
 
-<div class="section">
-  <h2>Upcoming Sessions</h2>
-  <div class="card-grid">
-    <div class="card">
-      <div class="thumbnail">Java OOP Basics</div>
-      <div class="card-content">
-        <p>Date: 12 Aug 2025 | Time: 6:00 PM</p>
-        <p>Tutored by: Charlie Brown</p>
-      </div>
-      <button onclick="alert('You will be notified for Java OOP Basics')">Notify Me</button>
-    </div>
-    <div class="card">
-      <div class="thumbnail">Mathematics - Algebra</div>
-      <div class="card-content">
-        <p>Date: 14 Aug 2025 | Time: 5:30 PM</p>
-        <p>Tutored by: Diana Lee</p>
-      </div>
-      <button onclick="alert('You will be notified for Mathematics - Algebra')">Notify Me</button>
-    </div>
-  </div>
-</div>
-
-<div class="section">
-  <h2>Live Sessions</h2>
-  <div class="card-grid">
-    <div class="card">
-      <div class="thumbnail">Machine Learning Intro</div>
-      <div class="card-content">
-        <p>Date: 11 Aug 2025 | Time: 4:00 PM</p>
-        <p>Tutored by: Ethan White</p>
-      </div>
-      <button onclick="alert('Joining Machine Learning Intro Live')">Join</button>
-    </div>
-    <div class="card">
-      <div class="thumbnail">Cybersecurity Basics</div>
-      <div class="card-content">
-        <p>Date: 11 Aug 2025 | Time: 5:30 PM</p>
-        <p>Tutored by: Sarah Jones</p>
-      </div>
-      <button onclick="alert('Joining Cybersecurity Basics Live')">Join</button>
-    </div>
-  </div>
-</div>
-
-<!-- Chatbot Modal -->
-<div id="chatbotModal" class="modal">
-  <div class="modal-content">
-    <span class="close-btn">&times;</span>
-    <h2>AI Peer Tutoring Assistant</h2>
-    <p id="chatbot-loading-status">Loading assistant...</p> 
-    <p>The chatbot icon will appear at the bottom right.</p>
-  </div>
-</div>
-
-<script>
-  const modal = document.getElementById("chatbotModal");
-  const closeBtn = document.querySelector(".close-btn");
-  const chatbotButton = document.getElementById("chatbotButton");
-  const loadingStatus = document.getElementById("chatbot-loading-status");
-
-  function loadChatbaseBot() {
-    if (document.getElementById("chatbase-script")) {
-      loadingStatus.textContent = "Chatbot is already active (bottom right).";
-      return;
-    }
-
-    loadingStatus.textContent = "Starting chatbot...";
-
-    window.embeddedChatbotConfig = {
-      chatbotId: "yNXiEdNnEsAi686sN5IW2",
-      domain: "www.chatbase.co",
+  <script>
+    // === STEP 1: Replace with your actual values ===
+    const msalConfig = {
+      auth: {
+        clientId: "18931f35-9b52-43b0-9022-7c08b8170647", // from Azure -> Overview
+        authority: "https://login.microsoftonline.com/13f148ca-3eb7-4c04-a8cd-e2475bd7d8f4", // from Azure -> Overview
+        redirectUri: "https://yellow-flower-0eafe1b00.1.azurestaticapps.net/"
+      }
     };
 
-    const chatScript = document.createElement("script");
-    chatScript.src = "https://www.chatbase.co/embed.min.js";
-    chatScript.id = "chatbase-script";
-    chatScript.defer = true;
-    chatScript.onload = () => {
-      loadingStatus.textContent = "Chatbot is ready! Look for the icon in bottom right.";
+    const msalInstance = new msal.PublicClientApplication(msalConfig);
+    const loginRequest = { scopes: ["openid", "profile", "User.Read"] };
+
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const statusEl = document.getElementById("status");
+    const infoEl = document.getElementById("userInfo");
+    const nameEl = document.getElementById("userName");
+    const emailEl = document.getElementById("userEmail");
+    const imgEl = document.getElementById("userImage");
+    const msgEl = document.getElementById("accessMsg");
+
+    // === STEP 2: Sign in ===
+    loginBtn.onclick = async () => {
+      try {
+        const loginResponse = await msalInstance.loginPopup(loginRequest);
+        const user = loginResponse.account;
+        checkUserDomain(user);
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = "Login failed. Try again.";
+      }
     };
-    document.body.appendChild(chatScript);
-  }
 
-  chatbotButton.onclick = function() {
-    modal.classList.add("show");
-    loadChatbaseBot();
-  };
+    // === STEP 3: Sign out ===
+    logoutBtn.onclick = async () => {
+      await msalInstance.logoutPopup();
+      statusEl.textContent = "You are not signed in.";
+      loginBtn.style.display = "block";
+      logoutBtn.style.display = "none";
+      infoEl.style.display = "none";
+    };
 
-  closeBtn.onclick = function() {
-    modal.classList.remove("show");
-    setTimeout(() => modal.style.display = "none", 300);
-  };
+    // === STEP 4: Check college domain ===
+    function checkUserDomain(user) {
+      const email = user.username;
+      statusEl.textContent = `Signed in as: ${email}`;
+      loginBtn.style.display = "none";
+      logoutBtn.style.display = "block";
+      infoEl.style.display = "block";
+      emailEl.textContent = email;
+      nameEl.textContent = user.name || "User";
 
-  window.onclick = function(event) {
-    if (event.target == modal) {
-      modal.classList.remove("show");
-      setTimeout(() => modal.style.display = "none", 300);
+      if (email.endsWith("@rajalakshmi.edu.in")) {
+        msgEl.textContent = "✅ Access granted for Rajalakshmi student.";
+        msgEl.style.color = "green";
+      } else {
+        msgEl.textContent = "❌ Access denied. Not a Rajalakshmi email.";
+        msgEl.style.color = "red";
+        // Optional: automatically logout
+        setTimeout(() => msalInstance.logoutPopup(), 2000);
+      }
+
+      // optional photo fetch
+      fetchPhoto();
     }
-  };
-</script>
 
+    // === STEP 5: Fetch user photo ===
+    async function fetchPhoto() {
+      try {
+        const token = await msalInstance.acquireTokenSilent(loginRequest);
+        const photoRes = await fetch("https://graph.microsoft.com/v1.0/me/photo/$value", {
+          headers: { Authorization: `Bearer ${token.accessToken}` }
+        });
+        if (photoRes.ok) {
+          const blob = await photoRes.blob();
+          imgEl.src = URL.createObjectURL(blob);
+        } else {
+          imgEl.src = "https://www.svgrepo.com/show/382106/male-avatar-boy-face-man-user-6.svg";
+        }
+      } catch {
+        imgEl.src = "https://www.svgrepo.com/show/382106/male-avatar-boy-face-man-user-6.svg";
+      }
+    }
+  </script>
 </body>
 </html>
