@@ -163,6 +163,7 @@
   <button onclick="window.location.href='my-request.html'">My Requests & Offers</button>
   <button onclick="window.location.href='notifications.html'">Notifications</button>
   <button id="chatbotButton">Chatbot</button>
+  <button id="logoutButton" style="background:#f33;">Logout</button>
 </div>
 
 <div class="section">
@@ -240,6 +241,20 @@
 </div>
 
 <script>
+  // === Protect Dashboard Page ===
+  const loggedInUser = sessionStorage.getItem("loggedInUser");
+  if (!loggedInUser) {
+    window.location.href = "index.html"; // redirect if not logged in
+  }
+
+  // === Logout ===
+  const logoutButton = document.getElementById("logoutButton");
+  logoutButton.onclick = () => {
+    sessionStorage.removeItem("loggedInUser");
+    window.location.href = "index.html";
+  };
+
+  // === Chatbot Modal Logic ===
   const modal = document.getElementById("chatbotModal");
   const closeBtn = document.querySelector(".close-btn");
   const chatbotButton = document.getElementById("chatbotButton");
