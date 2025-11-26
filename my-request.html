@@ -104,35 +104,64 @@ if (!userEmail) {
   window.location.href = "login.html";
 }
 async function loadData() {
-  const reqRes = await fetch(`http://localhost:5000/api/requests/user/${userEmail}`);
-  const reqData = await reqRes.json();
+    const fallbackMessage = '<tr><td colspan="4">No data found. Please check your login.</td></tr>';
 
-  const offRes = await fetch(`http://localhost:5000/api/tutoring/user/${userEmail}`);
-  const offData = await offRes.json();
+    try {
+        // --- Fetch Requests ---
+        const reqRes = await fetch(`http://localhost:5000/api/requests/user/${userEmail}`);
+        if (!reqRes.ok) throw new Error(`Request API Error: ${reqRes.status}`);
+        const reqData = await reqRes.json();
 
-  // Fill Requests Table
-  document.getElementById("requestsTable").innerHTML =
-    reqData.map(r => `
-      <tr>
-        <td>${r.subject}</td>
-        <td>${r.date}</td>
-        <td>${r.time}</td>
-        <td><span class="status ${r.status}">${r.status}</span></td>
-      </tr>
-    `).join("");
+        // --- Fetch Offers ---
+        const offRes = await fetch(`http://localhost:5000/api/tutoring/user/${userEmail}`);
+        if (!offRes.ok) throw new Error(`Tutoring API Error: ${offRes.status}`);
+        const offData = await offRes.json();
 
-  // Fill Offers Table
-  document.getElementById("offersTable").innerHTML =
-    offData.map(o => `
-      <tr>
-        <td>${o.subject}</td>
-        <td>${o.date}</td>
-        <td>${o.time}</td>
-        <td><span class="status ${o.status}">${o.status}</span></td>
-      </tr>
-    `).join("");
+        // --- Fill Requests Table ---
+        if (reqData && reqData.length) {
+            document.getElementById("requestsTable").innerHTML =
+                reqData.map(r => {
+                    const statusText = r.status || 'Unknown';
+                    const statusClass = statusText.toLowerCase();
+                    return `
+                        <tr>
+                            <td>${r.subject}</td>
+                            <td>${r.date}</td>
+                            <td>${r.time}</td>
+                            <td><span class="status ${statusClass}">${statusText}</span></td>
+                        </tr>
+                    `;
+                }).join("");
+        } else {
+            document.getElementById("requestsTable").innerHTML = fallbackMessage;
+        }
+
+        // --- Fill Offers Table ---
+        if (offData && offData.length) {
+            document.getElementById("offersTable").innerHTML =
+                offData.map(o => {
+                    const statusText = o.status || 'Unknown';
+                    const statusClass = statusText.toLowerCase();
+                    return `
+                        <tr>
+                            <td>${o.subject}</td>
+                            <td>${o.date}</td>
+                            <td>${o.time}</td>
+                            <td><span class="status ${statusClass}">${statusText}</span></td>
+                        </tr>
+                    `;
+                }).join("");
+        } else {
+            document.getElementById("offersTable").innerHTML = fallbackMessage;
+        }
+
+    } catch (error) {
+        console.error("Error loading data:", error);
+        alert("Failed to load data from server. See console for details.");
+        document.getElementById("requestsTable").innerHTML = `<tr><td colspan="4">Error loading requests: ${error.message}</td></tr>`;
+        document.getElementById("offersTable").innerHTML = `<tr><td colspan="4">Error loading offers: ${error.message}</td></tr>`;
+    }
 }
-
 loadData();
 </script>
 
