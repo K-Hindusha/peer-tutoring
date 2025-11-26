@@ -100,6 +100,7 @@
     // === STEP 4: Check college domain ===
     function checkUserDomain(user) {
       const email = user.username;
+      localStorage.setItem("userEmail", email);
       statusEl.textContent = `Signed in as: ${email}`;
       loginBtn.style.display = "none";
       logoutBtn.style.display = "block";
@@ -142,6 +143,7 @@
   </script>
 </body>
 </html>
+
 
 
 
