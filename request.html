@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Request Tutoring</title>
+  <title>My Requests & Offers</title>
   <style>
     :root {
-      --primary-color: #004aad; /* College blue */
-      --secondary-color: #f0f4f8; /* Light grey */
+      --primary-color: #004aad;
+      --secondary-color: #f0f4f8;
       --text-color: #333;
     }
     body {
@@ -16,7 +16,6 @@
       background: var(--secondary-color);
       color: var(--text-color);
     }
-
     header {
       background: var(--primary-color);
       padding: 15px;
@@ -24,100 +23,148 @@
       text-align: center;
       font-size: 1.5em;
     }
-
     .container {
-      max-width: 600px;
-      background: white;
+      max-width: 900px;
       margin: 30px auto;
       padding: 20px;
+      background: white;
       border-radius: 8px;
       box-shadow: 0 0 8px rgba(0,0,0,0.1);
     }
-
     h2 {
-      margin-bottom: 15px;
       color: var(--primary-color);
+      border-left: 5px solid var(--primary-color);
+      padding-left: 10px;
+      margin-bottom: 15px;
     }
-
-    label {
-      display: block;
-      margin-top: 12px;
-      font-weight: bold;
-    }
-
-    input, textarea, select {
+    table {
       width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 14px;
+      border-collapse: collapse;
+      margin-bottom: 30px;
     }
-
-    button {
-      margin-top: 20px;
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
       background: var(--primary-color);
       color: white;
+    }
+    .status {
       font-weight: bold;
-      border: none;
-      padding: 12px 18px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: 0.3s;
+      padding: 5px 10px;
+      border-radius: 5px;
     }
-
-    button:hover {
-      background: #003080;
-    }
-
-    .success-msg {
-      margin-top: 15px;
-      color: green;
-      font-weight: bold;
-      display: none;
-    }
+    .pending { background: orange; color: white; }
+    .completed { background: gray; color: white; }
   </style>
 </head>
 <body>
 
-  <header>
-    Request Tutoring
-  </header>
+  <header>My Requests & Offers</header>
 
   <div class="container">
-    <h2>Fill in your tutoring request</h2>
-    <form id="requestForm">
-      <label for="subject">Subject</label>
-      <input type="text" id="subject" placeholder="e.g., Data Structures" required>
 
-      <label for="date">Date</label>
-      <input type="date" id="date" required>
+    <!-- My Requests -->
+    <h2>📌 My Tutoring Requests</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="requestsTable"></tbody>
+    </table>
 
-      <label for="time">Time</label>
-      <input type="time" id="time" required>
+    <!-- My Offers -->
+    <h2>🎓 My Tutoring Offers</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="offersTable"></tbody>
+    </table>
 
-      <label for="description">Description</label>
-      <textarea id="description" rows="4" placeholder="What do you need help with?" required></textarea>
-
-      <button type="submit">Submit Request</button>
-    </form>
-    <p class="success-msg" id="successMsg">✅ Request submitted successfully!</p>
   </div>
 
-  <script>
-    const form = document.getElementById("requestForm");
-    const successMsg = document.getElementById("successMsg");
+<script>
+const userEmail = localStorage.getItem("userEmail");
+console.log("Logged user:", userEmail);
 
-    form.addEventListener("submit", function(e) {
-      e.preventDefault();
+if (!userEmail) {
+  alert("User not logged in!");
+  window.location.href = "login.html";
+}
+async function loadData() {
+    const fallbackMessage = '<tr><td colspan="4">No data found. Please check your login.</td></tr>';
 
-      // For now, just show success (later connect to Azure Function API)
-      successMsg.style.display = "block";
+    try {
+        // --- Fetch Requests ---
+        const reqRes = await fetch(`http://localhost:5000/api/requests/user/${userEmail}`);
+        if (!reqRes.ok) throw new Error(`Request API Error: ${reqRes.status}`);
+        const reqData = await reqRes.json();
 
-      // Reset form
-      form.reset();
-    });
-  </script>
+        // --- Fetch Offers ---
+        const offRes = await fetch(`http://localhost:5000/api/tutoring/user/${userEmail}`);
+        if (!offRes.ok) throw new Error(`Tutoring API Error: ${offRes.status}`);
+        const offData = await offRes.json();
+
+        // --- Fill Requests Table ---
+        if (reqData && reqData.length) {
+            document.getElementById("requestsTable").innerHTML =
+                reqData.map(r => {
+                    const statusText = r.status || 'Unknown';
+                    const statusClass = statusText.toLowerCase();
+                    return `
+                        <tr>
+                            <td>${r.subject}</td>
+                            <td>${r.date}</td>
+                            <td>${r.time}</td>
+                            <td><span class="status ${statusClass}">${statusText}</span></td>
+                        </tr>
+                    `;
+                }).join("");
+        } else {
+            document.getElementById("requestsTable").innerHTML = fallbackMessage;
+        }
+
+        // --- Fill Offers Table ---
+        if (offData && offData.length) {
+            document.getElementById("offersTable").innerHTML =
+                offData.map(o => {
+                    const statusText = o.status || 'Unknown';
+                    const statusClass = statusText.toLowerCase();
+                    return `
+                        <tr>
+                            <td>${o.subject}</td>
+                            <td>${o.date}</td>
+                            <td>${o.time}</td>
+                            <td><span class="status ${statusClass}">${statusText}</span></td>
+                        </tr>
+                    `;
+                }).join("");
+        } else {
+            document.getElementById("offersTable").innerHTML = fallbackMessage;
+        }
+
+    } catch (error) {
+        console.error("Error loading data:", error);
+        alert("Failed to load data from server. See console for details.");
+        document.getElementById("requestsTable").innerHTML = `<tr><td colspan="4">Error loading requests: ${error.message}</td></tr>`;
+        document.getElementById("offersTable").innerHTML = `<tr><td colspan="4">Error loading offers: ${error.message}</td></tr>`;
+    }
+}
+loadData();
+</script>
 
 </body>
 </html>
