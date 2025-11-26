@@ -1,170 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Requests & Offers</title>
-  <style>
-    :root {
-      --primary-color: #004aad;
-      --secondary-color: #f0f4f8;
-      --text-color: #333;
-    }
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background: var(--secondary-color);
-      color: var(--text-color);
-    }
-    header {
-      background: var(--primary-color);
-      padding: 15px;
-      color: white;
-      text-align: center;
-      font-size: 1.5em;
-    }
-    .container {
-      max-width: 900px;
-      margin: 30px auto;
-      padding: 20px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    }
-    h2 {
-      color: var(--primary-color);
-      border-left: 5px solid var(--primary-color);
-      padding-left: 10px;
-      margin-bottom: 15px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 30px;
-    }
-    th, td {
-      padding: 12px;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
-    }
-    th {
-      background: var(--primary-color);
-      color: white;
-    }
-    .status {
-      font-weight: bold;
-      padding: 5px 10px;
-      border-radius: 5px;
-    }
-    .pending { background: orange; color: white; }
-    .completed { background: gray; color: white; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Requests & Offers</title>
+
+    <style>
+        :root {
+            --primary-color: #004aad;
+            --secondary-color: #f0f4f8;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: var(--secondary-color);
+            color: var(--text-color);
+        }
+
+        header {
+            background: var(--primary-color);
+            padding: 15px;
+            color: white;
+            text-align: center;
+            font-size: 1.5em;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-left: 5px solid var(--primary-color);
+            padding-left: 10px;
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .status {
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .pending { background: orange; color: white; }
+        .completed { background: gray; color: white; }
+    </style>
 </head>
+
 <body>
 
-  <header>My Requests & Offers</header>
+    <header>My Requests & Offers</header>
 
-  <div class="container">
+    <div class="container">
 
-    <!-- My Requests -->
-    <h2>📌 My Tutoring Requests</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Subject</th>
-          <th>Date</th>
-          <th>Time</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="requestsTable"></tbody>
-    </table>
+        <!-- Requests Section -->
+        <h2>📌 My Tutoring Requests</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="requestsTable"></tbody>
+        </table>
 
-    <!-- My Offers -->
-    <h2>🎓 My Tutoring Offers</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Subject</th>
-          <th>Date</th>
-          <th>Time</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="offersTable"></tbody>
-    </table>
+        <!-- Offers Section -->
+        <h2>🎓 My Tutoring Offers</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="offersTable"></tbody>
+        </table>
 
-  </div>
+    </div>
 
-<script>
-const userEmail = localStorage.getItem("userEmail");
-console.log("Logged user:", userEmail);
+    <script>
+        const userEmail = localStorage.getItem("userEmail");
+        console.log("Logged user:", userEmail);
 
-if (!userEmail) {
-  alert("User not logged in!");
-  window.location.href = "login.html";
-}
-async function loadData() {
-    const fallbackMessage = '<tr><td colspan="4">No data found. Please check your login.</td></tr>';
-
-    try {
-        // --- Fetch Requests ---
-        const reqRes = await fetch(`http://localhost:5000/api/requests/user/${userEmail}`);
-        if (!reqRes.ok) throw new Error(`Request API Error: ${reqRes.status}`);
-        const reqData = await reqRes.json();
-
-        // --- Fetch Offers ---
-        const offRes = await fetch(`http://localhost:5000/api/tutoring/user/${userEmail}`);
-        if (!offRes.ok) throw new Error(`Tutoring API Error: ${offRes.status}`);
-        const offData = await offRes.json();
-
-        // --- Fill Requests Table ---
-        if (reqData && reqData.length) {
-            document.getElementById("requestsTable").innerHTML =
-                reqData.map(r => {
-                    const statusText = r.status || 'Unknown';
-                    const statusClass = statusText.toLowerCase();
-                    return `
-                        <tr>
-                            <td>${r.subject}</td>
-                            <td>${r.date}</td>
-                            <td>${r.time}</td>
-                            <td><span class="status ${statusClass}">${statusText}</span></td>
-                        </tr>
-                    `;
-                }).join("");
-        } else {
-            document.getElementById("requestsTable").innerHTML = fallbackMessage;
+        if (!userEmail) {
+            alert("User not logged in!");
+            window.location.href = "login.html";
         }
 
-        // --- Fill Offers Table ---
-        if (offData && offData.length) {
-            document.getElementById("offersTable").innerHTML =
-                offData.map(o => {
-                    const statusText = o.status || 'Unknown';
-                    const statusClass = statusText.toLowerCase();
-                    return `
-                        <tr>
-                            <td>${o.subject}</td>
-                            <td>${o.date}</td>
-                            <td>${o.time}</td>
-                            <td><span class="status ${statusClass}">${statusText}</span></td>
-                        </tr>
-                    `;
-                }).join("");
-        } else {
-            document.getElementById("offersTable").innerHTML = fallbackMessage;
+        async function loadData() {
+            const fallbackMessage = '<tr><td colspan="4">No data found. Please check your login.</td></tr>';
+
+            try {
+                // Fetch Requests
+                const reqRes = await fetch(`http://localhost:5000/api/requests/user/${userEmail}`);
+                if (!reqRes.ok) throw new Error(`Request API Error: ${reqRes.status}`);
+                const reqData = await reqRes.json();
+
+                // Fetch Offers
+                const offRes = await fetch(`http://localhost:5000/api/tutoring/user/${userEmail}`);
+                if (!offRes.ok) throw new Error(`Tutoring API Error: ${offRes.status}`);
+                const offData = await offRes.json();
+
+                // Populate Requests Table
+                document.getElementById("requestsTable").innerHTML =
+                    reqData && reqData.length
+                        ? reqData.map(r => `
+                            <tr>
+                                <td>${r.subject}</td>
+                                <td>${r.date}</td>
+                                <td>${r.time}</td>
+                                <td><span class="status ${ (r.status || 'unknown').toLowerCase() }">${r.status || 'Unknown'}</span></td>
+                            </tr>
+                        `).join("")
+                        : fallbackMessage;
+
+                // Populate Offers Table
+                document.getElementById("offersTable").innerHTML =
+                    offData && offData.length
+                        ? offData.map(o => `
+                            <tr>
+                                <td>${o.subject}</td>
+                                <td>${o.date}</td>
+                                <td>${o.time}</td>
+                                <td><span class="status ${ (o.status || 'unknown').toLowerCase() }">${o.status || 'Unknown'}</span></td>
+                            </tr>
+                        `).join("")
+                        : fallbackMessage;
+
+            } catch (error) {
+                console.error("Error loading data:", error);
+
+                document.getElementById("requestsTable").innerHTML =
+                    `<tr><td colspan="4">Error loading requests: ${error.message}</td></tr>`;
+
+                document.getElementById("offersTable").innerHTML =
+                    `<tr><td colspan="4">Error loading offers: ${error.message}</td></tr>`;
+
+                alert("Failed to load data from server. See console for details.");
+            }
         }
 
-    } catch (error) {
-        console.error("Error loading data:", error);
-        alert("Failed to load data from server. See console for details.");
-        document.getElementById("requestsTable").innerHTML = `<tr><td colspan="4">Error loading requests: ${error.message}</td></tr>`;
-        document.getElementById("offersTable").innerHTML = `<tr><td colspan="4">Error loading offers: ${error.message}</td></tr>`;
-    }
-}
-loadData();
-</script>
+        loadData();
+    </script>
 
 </body>
 </html>
